@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Aent 🛍️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Cố định */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0d0d14;
+            color: #fff;
+            background-image: url('https://i.imgur.com/your-pixel-art-image.png'); /* THAY ẢNH NỀN CỦA BẠN VÀO ĐÂY */
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 15, 25, 0.9);
+            z-index: -1;
+        }
+        .container { max-width: 950px; margin: 0 auto; padding: 20px; }
+        
+        /* Ẩn/Hiện Kênh chính */
+        .channel-content { display: none; animation: fadeIn 0.5s ease; }
+        .channel-content.active { display: block; }
+
+        /* Thanh điều hướng */
+        .navbar {
+            display: flex; justify-content: center; gap: 15px;
+            margin-bottom: 30px; padding: 15px;
+            background: rgba(255,255,255,0.05); border-radius: 15px; border: 1px solid #333;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            font-family: 'Press Start 2P', cursive; font-size: 11px;
+            padding: 10px 20px; border: 2px solid #555; background: transparent;
+            color: #aaa; border-radius: 8px; cursor: pointer; transition: 0.3s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            border-color: #ff00ff; color: #fff; box-shadow: 0 0 15px rgba(255,0,255,0.3);
+        }
+
+        /* Tiêu đề */
+        .shop-header { text-align: center; margin-bottom: 30px; }
+        .shop-header h1 { font-family: 'Press Start 2P', cursive; font-size: 28px; color: #ff00ff; text-shadow: 0 0 15px #ff00ff; }
+
+        /* Bảng giá */
+        .section-title { font-family: 'Press Start 2P', cursive; font-size: 16px; color: #00ffff; border-bottom: 2px solid #00ffff; padding-bottom: 10px; margin: 30px 0 20px; }
+        .price-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 600px) { .price-grid { grid-template-columns: 1fr 1fr; } }
+
+        .price-card {
+            background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px;
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+        .price-card:hover { border-color: #00ffff; transform: translateY(-3px); }
+        .service-name { font-weight: 700; font-size: 16px; }
+        .service-desc { font-size: 12px; color: #aaa; }
+        
+        .card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .service-price { font-family: 'Press Start 2P', cursive; font-size: 12px; color: #ffdd00; }
+        .buy-btn {
+            background: #ff00ff; color: #fff; border: none; padding: 5px 15px;
+            border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 12px;
+        }
+        .buy-btn:hover { background: #d500d5; }
+
+        /* --- KHU VỰC TICKET / HỖ TRỢ MỚI --- */
+        .tickets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        /* Custom thanh cuộn */
+        .tickets-list::-webkit-scrollbar { width: 8px; }
+        .tickets-list::-webkit-scrollbar-track { background: #111; border-radius: 4px; }
+        .tickets-list::-webkit-scrollbar-thumb { background: #00ffff; border-radius: 4px; }
+
+        .ticket-box {
+            background: rgba(30, 30, 50, 0.7);
+            border: 1px solid #555;
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid #ff00ff;
+            backdrop-filter: blur(5px);
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .ticket-header .vip-name { color: #ffdd00; font-size: 18px; }
+        .ticket-header .order-info { color: #aaa; font-size: 13px; }
+
+        .ticket-messages {
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 5px;
+        }
+        
+        .chat-msg {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-msg.admin { border-left: 3px solid #ff00ff; }
+        .chat-msg.customer { border-left: 3px solid #00ffff; margin-left: 15px; }
+        .chat-msg .msg-header { font-size: 12px; color: #aaa; margin-bottom: 4px; display: flex; justify-content: space-between;}
+        .chat-msg .msg-content { font-size: 14px; word-break: break-word; }
+        .chat-msg .msg-content img { max-width: 100%; max-height: 300px; border-radius: 5px; margin-top: 5px; border: 1px solid #555; }
+        .chat-msg .msg-content a { color: #00ffff; }
+
+        .ticket-input-area {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 10px;
+            background: rgba(0,0,0,0.4);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+        .ticket-input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            outline: none;
+        }
+        
+        /* Nút gửi file (Admin & Khách) */
+        .file-btn {
+            background: #333;
+            border: none;
+            color: #aaa;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            position: relative;
+            transition: 0.3s;
+        }
+        .file-btn input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+        .file-btn:hover { background: #555; color: #fff; }
+
+        .ticket-send-btn {
+            padding: 10px 20px;
+            background: #00ffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #000;
+            transition: 0.3s;
+        }
+        .ticket-send-btn:hover { background: #00cccc; }
+
+        .no-tickets { text-align: center; color: #666; margin-top: 50px; font-family: 'Press Start 2P', cursive; font-size: 14px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+    <div class="overlay"></div>
+
+    <div class="container">
+        <div class="shop-header">
+            <h1>🛍️ SHOP AENT</h1>
+            <p style="color: #aaa;">Hệ thống mua hàng tự động & Ticket VIP</p>
+        </div>
+
+        <!-- Thanh chuyển kênh -->
+        <div class="navbar">
+            <button class="nav-btn active" onclick="switchChannel('shop')">🛒 Kênh Shop</button>
+            <button class="nav-btn" onclick="switchChannel('support')">💬 Kênh Hỗ Trợ</button>
+            <button class="nav-btn" onclick="window.open('https://discord.gg/5BCK4xnQe', '_blank')">🌐 Sever Discord</button>
+        </div>
+
+        <!-- ========= KÊNH 1: SHOP AENT ========= -->
+        <div id="shop" class="channel-content active">
+            <h2 class="section-title">📦 Công Cụ & Tool</h2>
+            <div class="price-grid">
+                <div class="price-card"><div><div class="service-name">Tool Xả Đa Token</div></div><div class="card-actions"><span class="service-price">150k</span><button class="buy-btn" onclick="buyItem('Tool Xả Đa Token', '150k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Tool Nhây Mes Full CN</div></div><div class="card-actions"><span class="service-price">100k</span><button class="buy-btn" onclick="buyItem('Tool Nhây Mes', '100k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Tool Treo Token</div></div><div class="card-actions"><span class="service-price">100k</span><button class="buy-btn" onclick="buyItem('Tool Treo Token', '100k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Tool Join Giải Capcha</div></div><div class="card-actions"><span class="service-price">200k</span><button class="buy-btn" onclick="buyItem('Tool Join Capcha', '200k')">Mua</button></div></div>
+            </div>
+
+            <h2 class="section-title">🪝 Hook & Apo</h2>
+            <div class="price-grid">
+                <div class="price-card"><div><div class="service-name">Hook Mobile (All 10)</div></div><div class="card-actions"><span class="service-price">LH Admin</span><button class="buy-btn" onclick="buyItem('Hook Mobile', 'Liên hệ Admin')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Apo</div><div class="service-desc">(Chưa nhập hàng)</div></div><div class="card-actions"><span class="service-price" style="color:#888;">Hết</span></div></div>
+            </div>
+
+            <h2 class="section-title">🚀 Boost Server</h2>
+            <div class="price-grid">
+                <div class="price-card"><div><div class="service-name">14x bút</div><div class="service-desc">1 Tháng</div></div><div class="card-actions"><span class="service-price">180k</span><button class="buy-btn" onclick="buyItem('14x bút 1 Tháng', '180k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">14x bút</div><div class="service-desc">3 Tháng</div></div><div class="card-actions"><span class="service-price">250k</span><button class="buy-btn" onclick="buyItem('14x bút 3 Tháng', '250k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">20 bút</div><div class="service-desc">3 Tháng</div></div><div class="card-actions"><span class="service-price">LH Admin</span><button class="buy-btn" onclick="buyItem('20 bút 3 Tháng', 'LH Admin')">Mua</button></div></div>
+            </div>
+
+            <h2 class="section-title" style="font-size: 14px; color:#ff8888;">🎁 Nicho Boost (Lưu ý: Acc >1 tháng, chưa mua Nitro)</h2>
+            <div class="price-grid">
+                <div class="price-card"><div><div class="service-name">Nicho Trial</div><div class="service-desc">3 tháng đầu</div></div><div class="card-actions"><span class="service-price">70k</span><button class="buy-btn" onclick="buyItem('Nicho Trial 3T', '70k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Boost</div><div class="service-desc">1 tháng</div></div><div class="card-actions"><span class="service-price">88k</span><button class="buy-btn" onclick="buyItem('Nicho Boost 1T', '88k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Basic</div><div class="service-desc">1 tháng</div></div><div class="card-actions"><span class="service-price">45k</span><button class="buy-btn" onclick="buyItem('Nicho Basic 1T', '45k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Boost</div><div class="service-desc">2 tháng</div></div><div class="card-actions"><span class="service-price">99k</span><button class="buy-btn" onclick="buyItem('Nicho Boost 2T', '99k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Classic</div><div class="service-desc">3 tháng</div></div><div class="card-actions"><span class="service-price">125k</span><button class="buy-btn" onclick="buyItem('Nicho Classic 3T', '125k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Boost</div><div class="service-desc">1 Năm</div></div><div class="card-actions"><span class="service-price">850k</span><button class="buy-btn" onclick="buyItem('Nicho Boost 1N', '850k')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">Nicho Classic</div><div class="service-desc">1 Năm</div></div><div class="card-actions"><span class="service-price">500k</span><button class="buy-btn" onclick="buyItem('Nicho Classic 1N', '500k')">Mua</button></div></div>
+            </div>
+
+            <h2 class="section-title">🪙 Token & Hỗ Trợ Join</h2>
+            <div class="price-grid">
+                <div class="price-card"><div><div class="service-name">1 Token</div><div class="service-desc">Giá gốc</div></div><div class="card-actions"><span class="service-price">700đ</span><button class="buy-btn" onclick="buyItem('1 Token', '700đ')">Mua</button></div></div>
+                <div class="price-card"><div><div class="service-name">1 Token (Có Hỗ Trợ Join)</div><div class="service-desc">Hỗ trợ đổ Join Server</div></div><div class="card-actions"><span class="service-price">1.000đ</span><button class="buy-btn" onclick="buyItem('1 Token (Có hỗ trợ Join Server)', '1.000đ')">Mua</button></div></div>
+            </div>
+        </div>
+
+        <!-- ========= KÊNH 2: HỖ TRỢ MUA HÀNG (TICKET MỚI) ========= -->
+        <div id="support" class="channel-content">
+            <h2 style="font-family: 'Press Start 2P', cursive; font-size: 16px; color: #ffdd00; margin-bottom: 10px;">🎟️ Danh sách Ticket (Khách Vip)</h2>
+            <div id="ticketContainer" class="tickets-list">
+                <div class="no-tickets">Chưa có khách hàng nào mua hàng.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========= JAVASCRIPT XỬ LÝ ========= -->
+    <script>
+        let vipCounter = 0; // Biến đếm số lượng khách VIP
+
+        // 1. Chuyển đổi giữa các Kênh
+        function switchChannel(channelId) {
+            document.querySelectorAll('.channel-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(channelId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 2. Tạo Ticket riêng cho từng khách hàng khi bấm Mua
+        function buyItem(itemName, itemPrice) {
+            vipCounter++; // Tăng số thứ tự VIP lên 1
+            const vipName = `Khách Vip ${vipCounter}`;
+            const ticketContainer = document.getElementById('ticketContainer');
+            
+            // Xóa dòng chữ "Chưa có khách hàng" nếu tồn tại
+            const noTicketMsg = document.querySelector('.no-tickets');
+            if (noTicketMsg) noTicketMsg.remove();
+
+            // Tạo khung chat (Ticket) mới
+            const ticketHTML = `
+                <div class="ticket-box" id="ticket-${vipCounter}">
+                    <div class="ticket-header">
+                        <span class="vip-name">👑 ${vipName}</span>
+                        <span class="order-info">Mua: ${itemName} (${itemPrice})</span>
+                    </div>
+                    <div class="ticket-messages" id="msg-${vipCounter}">
+                        <div class="chat-msg customer">
+                            <div class="msg-header"><span>${vipName}</span> <span>Vừa gửi</span></div>
+                            <div class="msg-content">Tôi muốn mua <strong>${itemName}</strong> với giá <strong>${itemPrice}</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="ticket-input-area">
+                        <input type="text" class="ticket-input" id="input-${vipCounter}" placeholder="Nhập tin nhắn...">
+                        <label class="file-btn" title="Gửi ảnh/File">
+                            📎
+                            <input type="file" id="file-${vipCounter}" onchange="sendFile(${vipCounter})">
+                        </label>
+                        <button class="ticket-send-btn" onclick="sendMessage(${vipCounter}, '${vipName}')">Gửi</button>
+                    </div>
+                </div>
+            `;
+
+            // Thêm khung chat mới vào đầu danh sách
+            ticketContainer.insertAdjacentHTML('afterbegin', ticketHTML);
+
+            // Tự động chuyển sang kênh Hỗ trợ
+            switchChannel('support');
+            // Tự động scroll xuống ticket vừa tạo
+            setTimeout(() => {
+                document.getElementById(`ticket-${vipCounter}`).scrollIntoView({behavior: "smooth"});
+            }, 100);
+        }
+
+        // 3. Gửi tin nhắn chat trong Ticket
+        function sendMessage(ticketId, senderName) {
+            const input = document.getElementById(`input-${ticketId}`);
+            const msgContainer = document.getElementById(`msg-${ticketId}`);
+            const message = input.value.trim();
+            
+            if (message !== "") {
+                // Xác định role: Nếu tên chứa "Admin" (bạn) thì là admin, còn lại là khách
+                const role = senderName === 'Admin' ? 'admin' : 'customer';
+                
+                const newMsg = document.createElement('div');
+                newMsg.className = `chat-msg ${role}`;
+                const time = new Date().toLocaleTimeString();
+                newMsg.innerHTML = `
+                    <div class="msg-header"><span>${senderName}</span> <span>${time}</span></div>
+                    <div class="msg-content">${message}</div>
+                `;
+                msgContainer.appendChild(newMsg);
+                input.value = "";
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+            }
+        }
+
+        // 4. Gửi File/Ảnh trong Ticket
+        function sendFile(ticketId) {
+            const fileInput = document.getElementById(`file-${ticketId}`);
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const msgContainer = document.getElementById(`msg-${ticketId}`);
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const newMsg = document.createElement('div');
+                newMsg.className = `chat-msg admin`; // Mặc định gửi từ Admin. Nếu muốn khách gửi, bạn cần thêm logic khác
+                const time = new Date().toLocaleTimeString();
+                
+                if (file.type.startsWith('image/')) {
+                    // Nếu là ảnh
+                    newMsg.innerHTML = `
+                        <div class="msg-header"><span>Admin</span> <span>${time}</span></div>
+                        <div class="msg-content"><img src="${e.target.result}" alt="Ảnh chuyển khoản"></div>
+                    `;
+                } else {
+                    // Nếu là file
+                    newMsg.innerHTML = `
+                        <div class="msg-header"><span>Admin</span> <span>${time}</span></div>
+                        <div class="msg-content"><a href="${e.target.result}" download="${file.name}">📁 Tải xuống: ${file.name}</a></div>
+                    `;
+                }
+                msgContainer.appendChild(newMsg);
+                msgContainer.scrollTop = msgContainer.scrollHeight;
+                fileInput.value = ""; // Reset input file
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 5. Hỗ trợ ấn Enter để gửi tin nhắn trong Ticket (Dùng Event Delegation)
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && event.target.classList.contains('ticket-input')) {
+                const inputId = event.target.id.split('-')[1];
+                const ticketBox = document.getElementById(`ticket-${inputId}`);
+                const headerText = ticketBox.querySelector('.vip-name').innerText;
+                // Nếu headerText là Khách Vip X thì gửi với tên đó, nếu không thì gửi Admin
+                sendMessage(inputId, headerText);
+            }
+        });
+        
+        // 6. Hàm cho phép Admin (bạn) gửi tin nhắn với tên Admin
+        // Để dùng cho admin gửi từ bên ngoài (giả lập), bạn có thể thêm nút, nhưng trong code trên 
+        // khi bạn gõ enter nó sẽ lấy tên trong Header (Khách Vip X). 
+        // Để đơn giản, bạn cứ nhắn bằng nút Gửi trong Ticket của khách.
+        // (Lưu ý: Nếu muốn Admin nhắn riêng, hiện tại code hỗ trợ cả 2 người nhắn chung ticket)
+    </script>
+</body>
+</html>
